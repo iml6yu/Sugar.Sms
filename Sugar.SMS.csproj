@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="3.0.0" />
+    <PackageReference Include="qcloudsms_csharp_standard2_1" Version="0.1.7" />
+    <PackageReference Include="Sugar.Utils" Version="1.0.0.4" />
+  </ItemGroup>
+
+</Project>
