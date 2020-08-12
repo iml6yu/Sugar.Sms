@@ -1,8 +1,6 @@
-﻿using Sugar.Utils;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Sugar.SMS
@@ -27,7 +25,7 @@ namespace Sugar.SMS
             this.smsProvider = smsProvider;
             this.options = options;
             //定时清理超时验证码
-            Task.Run(() =>
+            Task.Run(async () =>
             {
                 while (true)
                 {
@@ -37,7 +35,7 @@ namespace Sugar.SMS
                         var list = authCodeDic.Where(t => now.Subtract(t.Value.CreateTime) > options.liveMinutes).ToList();
                         list.ForEach(t => authCodeDic.Remove(t.Key));
                     }
-                    Task.Delay(TimeSpan.FromHours(1));
+                    await Task.Delay(TimeSpan.FromMinutes(10));
                 }
             });
         }
@@ -52,7 +50,7 @@ namespace Sugar.SMS
         {
             if (!IsReSend(phone, ref msg)) return false;
             msg = CreateCode();
-            var result = smsProvider.SendSMSMessage(new List<string> { phone }, templateid, new List<string>() { msg, options.liveMinutes.TotalMinutes.ToString("#0") });
+            var result = smsProvider.SendSMSMessage(new List<string> { phone }, templateid, new List<string>() { msg });
             if (result.result == 0)
             {
                 lock (authCodeDic)
@@ -76,6 +74,22 @@ namespace Sugar.SMS
         }
 
         /// <summary>
+        /// 发送短信
+        /// </summary>
+        /// <param name="phone">目标手机号</param>
+        /// <param name="templateid">模板id</param>
+        /// <param name="contents">短信模板内容，根据实际内容配置决定</param>
+        /// <returns></returns>
+        public bool SendMsg(string phone, int templateid, List<string> contents)
+        {
+            var result = smsProvider.SendSMSMessage(new List<string> { phone }, templateid, contents);
+            if (result.result == 0)
+                return true;
+            else
+                throw new Exception($"{result.errMsg}({result.result})");
+        }
+
+        /// <summary>
         /// 验证
         /// </summary>
         /// <param name="phone"></param>
@@ -88,21 +102,21 @@ namespace Sugar.SMS
             {
                 if (!authCodeDic.ContainsKey(phone) || authCodeDic[phone] == null)
                 {
-                    reason = MessageType.当前数据不存在.ToString();
+                    reason = "当前数据不存在";
                     return false;
                 }
                 if (authCodeDic[phone].Code != code)
                 {
-                    reason = MessageType.验证码错误.ToString();
+                    reason = "验证码错误";
                     return false;
                 }
                 if (DateTime.Now.Subtract(authCodeDic[phone].CreateTime) > options.liveMinutes)
                 {
-                    reason = MessageType.验证码已超时.ToString();
+                    reason = "验证码已超时";
                     authCodeDic.Remove(phone);
                     return false;
                 }
-                reason = MessageType.成功.ToString();
+                reason = "成功";
                 authCodeDic.Remove(phone);
                 return true;
             }

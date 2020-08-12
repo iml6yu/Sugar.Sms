@@ -1,8 +1,6 @@
-﻿using Sugar.Utils;
-using qcloudsms_csharp;
+﻿using qcloudsms_csharp;
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Sugar.SMS
 {
@@ -49,7 +47,7 @@ namespace Sugar.SMS
         /// <returns></returns>
         public override SmsMultiSenderResult SendSMSMessage( List<string> phoneNumbers, int templateId, List<string> contents, string nationCode = "86", string extend = "", string ext = "")
         {
-            SmsMultiSender sender = new SmsMultiSender(Options.SmsAppid, Options.IsEncrypt ? AESHelper.AESDecrypt(Options.SmsAppKey) : Options.SmsAppKey);
+            SmsMultiSender sender = new SmsMultiSender(Options.SmsAppid, Options.SmsAppKey);
             var result = sender.sendWithParam(nationCode, phoneNumbers,
                 templateId, contents, Options.SignCompany, extend, ext);  // 签名参数未提供或者为空时，会使用默认签名发送短信
             return result;
